@@ -222,6 +222,7 @@ class AutoComplete extends React.Component {
 
   moveHighlightedIndex = (step, e) => {
     let newIndex = this.state.highlightedIndex + step;
+    const listSize = this.itemCount || this.items.size;
 
     // when this component is in virtualized mode, only a subset of items will be passed
     // down, making the array length inaccurate. instead we manually pass the length as itemCount
@@ -302,7 +303,9 @@ class AutoComplete extends React.Component {
   };
 
   getMenuProps = menuProps => {
-    this.itemCount = menuProps.itemCount;
+    this.seState({
+      itemCount: menuProps.itemCount
+    });
 
     return {
       ...menuProps,
