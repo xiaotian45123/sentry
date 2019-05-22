@@ -9,7 +9,7 @@ from __future__ import absolute_import
 from sentry.projectoptions import register
 
 # latest epoch
-LATEST_EPOCH = 1
+LATEST_EPOCH = 2
 
 # grouping related configs
 #
@@ -55,5 +55,6 @@ register(
     key='sentry:default_loader_version',
     epoch_defaults={
         1: '4.x',
+        2: '5.x',
     }
 )
