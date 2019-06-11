@@ -169,7 +169,6 @@ const Controls = styled(({expanded, ...props}) => (
 const Fingerprint = styled('label')`
   font-family: ${p => p.theme.text.familyMono};
 
-  /* stylelint-disable-next-line no-duplicate-selectors */
   ${Controls} & {
     font-weight: normal;
     margin: 0;

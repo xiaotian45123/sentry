@@ -214,11 +214,9 @@ const SidebarDropdownActor = styled('div')`
   cursor: pointer;
 
   &:hover {
-    /* stylelint-disable-next-line no-duplicate-selectors */
     ${OrgOrUserName} {
       text-shadow: 0 0 6px rgba(255, 255, 255, 0.1);
     }
-    /* stylelint-disable-next-line no-duplicate-selectors */
     ${UserNameOrEmail} {
       color: ${p => p.theme.gray1};
     }

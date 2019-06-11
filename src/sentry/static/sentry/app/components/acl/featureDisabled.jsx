@@ -141,7 +141,6 @@ const HelpDescription = styled(Box)`
 `;
 
 const AlertWrapper = styled('div')`
-  /* stylelint-disable-next-line no-duplicate-selectors */
   ${HelpButton} {
     color: #6d6319;
     &:hover {
