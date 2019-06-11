@@ -23,7 +23,7 @@ module.exports = {
           {
             mode: 'remove', // remove from bundle
             removeImport: true, // removes `prop-types` import statements
-            // additionalLibraries: [/app\/sentryTypes$/],
+            additionalLibraries: [/app\/sentryTypes$/],
           },
         ],
       ],
