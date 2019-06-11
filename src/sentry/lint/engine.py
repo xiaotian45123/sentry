@@ -141,7 +141,7 @@ def js_stylelint(file_list=None, parseable=False, format=False):
 
     has_errors = False
     if js_file_list:
-        cmd = [stylelint_path]
+        cmd = [stylelint_path, '--syntax', 'css-in-js']
 
         status = Popen(cmd + js_file_list).wait()
         has_errors = status != 0
