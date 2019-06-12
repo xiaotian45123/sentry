@@ -5,11 +5,11 @@ import six
 from celery import Task
 from collections import namedtuple
 from django.core.urlresolvers import reverse
-from mock import patch
+from mock import patch, call
 
 from sentry.models import Rule, SentryApp, SentryAppInstallation
 from sentry.testutils import TestCase
-from sentry.testutils.helpers.faux import faux
+from sentry.testutils.helpers.faux import faux, Mock, DictContaining
 from sentry.utils.http import absolute_uri
 from sentry.receivers.sentry_apps import *  # NOQA
 from sentry.utils import json
@@ -24,31 +24,6 @@ from sentry.tasks.sentry_apps import (
 )
 
 RuleFuture = namedtuple('RuleFuture', ['rule', 'kwargs'])
-
-
-class DictContaining(object):
-    def __init__(self, *args, **kwargs):
-        if len(args) == 1 and isinstance(args[0], dict):
-            self.args = []
-            self.kwargs = args[0]
-        else:
-            self.args = args
-            self.kwargs = kwargs
-
-    def __eq__(self, other):
-        return self._args_match(other) and self._kwargs_match(other)
-
-    def _args_match(self, other):
-        for key in self.args:
-            if key not in other.keys():
-                return False
-        return True
-
-    def _kwargs_match(self, other):
-        for key, value in six.iteritems(self.kwargs):
-            if self.kwargs[key] != other[key]:
-                return False
-        return True
 
 
 class TestSendAlertEvent(TestCase):
@@ -114,7 +89,7 @@ class TestSendAlertEvent(TestCase):
         with self.tasks():
             notify_sentry_app(event, [rule_future])
 
-        data = json.loads(faux(safe_urlopen).kwargs['data'])
+        data = json.loads(faux(safe_urlopen, 0).kwargs['data'])
 
         assert data == {
             'action': 'triggered',
@@ -147,13 +122,47 @@ class TestSendAlertEvent(TestCase):
             }
         }
 
-        assert faux(safe_urlopen).kwarg_equals('headers', DictContaining(
+        assert faux(safe_urlopen, 0).kwarg_equals('headers', DictContaining(
             'Content-Type',
             'Request-ID',
             'Sentry-Hook-Resource',
             'Sentry-Hook-Timestamp',
             'Sentry-Hook-Signature',
         ))
+
+    @patch('sentry.tasks.sentry_apps.safe_urlopen')
+    @patch('sentry.utils.metrics.incr')
+    def test_records_request_metrics(self, incr, safe_urlopen):
+        safe_urlopen.return_value = Mock(status_code=200)
+
+        group = self.create_group(project=self.project)
+        event = self.create_event(group=group)
+
+        send_alert_event(event, self.rule.label, self.sentry_app.id)
+
+        incr.assert_has_calls([
+            call(
+                'webhook.sent',
+                instance='sentry.tasks.sentry_apps.send_alert_event',
+                tags={
+                    'integration_platform': True,
+                    'event': 'event_alert.triggered',
+                    'sentry_app': self.sentry_app.slug,
+                },
+                skip_internal=False,
+            ),
+            call(
+                'webhook.delivered',
+                instance='sentry.tasks.sentry_apps.send_alert_event',
+                tags={
+                    'integration_platform': True,
+                    'event': 'event_alert.triggered',
+                    'sentry_app': self.sentry_app.slug,
+                    'status_code': 200,
+                },
+                skip_internal=False,
+            )
+        ])
 
 
 @patch('sentry.tasks.sentry_apps.safe_urlopen')
@@ -184,16 +193,16 @@ class TestProcessResourceChange(TestCase):
                 is_new_group_environment=False,
             )
 
-        data = json.loads(faux(safe_urlopen).kwargs['data'])
+        data = json.loads(faux(safe_urlopen, 0).kwargs['data'])
 
         assert data['action'] == 'created'
         assert data['installation']['uuid'] == self.install.uuid
         assert data['data']['issue']['id'] == six.text_type(issue.id)
-        assert faux(safe_urlopen).kwargs_contain('headers.Content-Type')
-        assert faux(safe_urlopen).kwargs_contain('headers.Request-ID')
-        assert faux(safe_urlopen).kwargs_contain('headers.Sentry-Hook-Resource')
-        assert faux(safe_urlopen).kwargs_contain('headers.Sentry-Hook-Timestamp')
-        assert faux(safe_urlopen).kwargs_contain('headers.Sentry-Hook-Signature')
+        assert faux(safe_urlopen, 0).kwargs_contain('headers.Content-Type')
+        assert faux(safe_urlopen, 0).kwargs_contain('headers.Request-ID')
+        assert faux(safe_urlopen, 0).kwargs_contain('headers.Sentry-Hook-Resource')
+        assert faux(safe_urlopen, 0).kwargs_contain('headers.Sentry-Hook-Timestamp')
+        assert faux(safe_urlopen, 0).kwargs_contain('headers.Sentry-Hook-Signature')
 
     def test_does_not_process_disallowed_event(self, safe_urlopen):
         process_resource_change('delete', 'Group', self.create_group().id)
@@ -218,6 +227,40 @@ class TestProcessResourceChange(TestCase):
 
         task = faux(process).kwargs['retryer']
         assert isinstance(task, Task)
+
+    @patch('sentry.utils.metrics.incr')
+    def test_records_request_metrics(self, incr, safe_urlopen):
+        safe_urlopen.return_value = Mock(status_code=200)
+
+        process_resource_change_bound(
+            'created',
+            'Group',
+            self.create_group().id,
+        )
+
+        incr.assert_has_calls([
+            call(
+                'webhook.sent',
+                instance='sentry.tasks.sentry_apps.process_resource_change',
+                tags={
+                    'integration_platform': True,
+                    'event': 'issue.created',
+                    'sentry_app': self.sentry_app.slug,
+                },
+                skip_internal=False,
+            ),
+            call(
+                'webhook.delivered',
+                instance='sentry.tasks.sentry_apps.process_resource_change',
+                tags={
+                    'integration_platform': True,
+                    'event': 'issue.created',
+                    'sentry_app': self.sentry_app.slug,
+                    'status_code': 200,
+                },
+                skip_internal=False,
+            )
+        ])
 
 
 @patch('sentry.mediators.sentry_app_installations.InstallationNotifier.run')
@@ -274,19 +317,19 @@ class TestWorkflowNotification(TestCase):
     def test_sends_resolved_webhook(self, safe_urlopen):
         workflow_notification(self.install.id, self.issue.id, 'resolved', self.user.id)
 
-        assert faux(safe_urlopen).kwarg_equals('url', self.sentry_app.webhook_url)
-        assert faux(safe_urlopen).kwarg_equals('data.action', 'resolved', format='json')
-        assert faux(safe_urlopen).kwarg_equals('headers.Sentry-Hook-Resource', 'issue')
-        assert faux(safe_urlopen).kwarg_equals(
+        assert faux(safe_urlopen, 0).kwarg_equals('url', self.sentry_app.webhook_url)
+        assert faux(safe_urlopen, 0).kwarg_equals('data.action', 'resolved', format='json')
+        assert faux(safe_urlopen, 0).kwarg_equals('headers.Sentry-Hook-Resource', 'issue')
+        assert faux(safe_urlopen, 0).kwarg_equals(
             'data.data.issue.id', six.binary_type(
                 self.issue.id), format='json')
 
     def test_sends_resolved_webhook_as_Sentry_without_user(self, safe_urlopen):
         workflow_notification(self.install.id, self.issue.id, 'resolved', None)
 
-        assert faux(safe_urlopen).kwarg_equals('data.actor.type', 'application', format='json')
-        assert faux(safe_urlopen).kwarg_equals('data.actor.id', 'sentry', format='json')
-        assert faux(safe_urlopen).kwarg_equals('data.actor.name', 'Sentry', format='json')
+        assert faux(safe_urlopen, 0).kwarg_equals('data.actor.type', 'application', format='json')
+        assert faux(safe_urlopen, 0).kwarg_equals('data.actor.id', 'sentry', format='json')
+        assert faux(safe_urlopen, 0).kwarg_equals('data.actor.name', 'Sentry', format='json')
 
     def test_does_not_send_if_no_service_hook_exists(self, safe_urlopen):
         sentry_app = self.create_sentry_app(
@@ -313,3 +356,33 @@ class TestWorkflowNotification(TestCase):
         )
         workflow_notification(install.id, self.issue.id, 'assigned', self.user.id)
         assert not safe_urlopen.called
+
+    @patch('sentry.utils.metrics.incr')
+    def test_records_request_metrics(self, incr, safe_urlopen):
+        safe_urlopen.return_value = Mock(status_code=200)
+
+        workflow_notification(self.install.id, self.issue.id, 'resolved', self.user.id)
+
+        incr.assert_has_calls([
+            call(
+                'webhook.sent',
+                instance='sentry.tasks.sentry_apps.workflow_notification',
+                tags={
+                    'integration_platform': True,
+                    'event': 'issue.resolved',
+                    'sentry_app': self.sentry_app.slug,
+                },
+                skip_internal=False,
+            ),
+            call(
+                'webhook.delivered',
+                instance='sentry.tasks.sentry_apps.workflow_notification',
+                tags={
+                    'integration_platform': True,
+                    'event': 'issue.resolved',
+                    'sentry_app': self.sentry_app.slug,
+                    'status_code': 200,
+                },
+                skip_internal=False,
+            )
+        ])

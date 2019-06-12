@@ -101,6 +101,15 @@ def send_alert_event(event, rule, sentry_app_id):
         data=request_data.body,
         headers=request_data.headers,
         timeout=5,
+        metrics={
+            'key': 'webhook',
+            'instance': 'sentry.tasks.sentry_apps.send_alert_event',
+            'tags': {
+                'integration_platform': True,
+                'event': 'event_alert.triggered',
+                'sentry_app': sentry_app.slug,
+            }
+        }
     )
 
 
@@ -147,7 +156,13 @@ def _process_resource_change(action, sender, instance_id, retryer=None, *args, *
     for installation in installations:
         data = {}
         data[name] = serialize(instance)
-        send_webhooks(installation, event, data=data)
+
+        send_webhooks(
+            installation,
+            event,
+            data=data,
+            instance='sentry.tasks.sentry_apps.process_resource_change',
+        )
 
 
 @instrumented_task('sentry.tasks.process_resource_change', **TASK_OPTIONS)
@@ -226,6 +241,7 @@ def workflow_notification(installation_id, issue_id, type, user_id, *args, **kwa
         event=u'issue.{}'.format(type),
         data=data,
         actor=user,
+        instance='sentry.tasks.sentry_apps.workflow_notification',
     )
 
 
@@ -241,7 +257,7 @@ def notify_sentry_app(event, futures):
         )
 
 
-def send_webhooks(installation, event, **kwargs):
+def send_webhooks(installation, event, instance=None, **kwargs):
     try:
         servicehook = ServiceHook.objects.get(
             organization_id=installation.organization_id,
@@ -274,4 +290,13 @@ def send_webhooks(installation, event, **kwargs):
             data=request_data.body,
             headers=request_data.headers,
             timeout=5,
+            metrics={
+                'key': 'webhook',
+                'instance': instance,
+                'tags': {
+                    'integration_platform': True,
+                    'event': event,
+                    'sentry_app': servicehook.sentry_app.slug,
+                },
+            }
         )
