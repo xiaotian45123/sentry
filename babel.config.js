@@ -23,6 +23,12 @@ module.exports = {
           {
             mode: 'remove', // remove from bundle
             removeImport: true, // removes `prop-types` import statements
+            classNameMatchers: [
+              'SelectField',
+              'FormField',
+              'AsyncComponent',
+              'AsyncView',
+            ],
             additionalLibraries: [/app\/sentryTypes$/],
           },
         ],
