@@ -1,7 +1,20 @@
+import React from 'react';
+
 import {t} from 'app/locale';
+import {openDebugFileSourceModal} from 'app/actionCreators/modal';
 
 // Export route to make these forms searchable by label/help
 export const route = '/settings/:orgId/projects/:projectId/debug-symbols/';
+
+export const sourceNames = {
+  gcs: t('Google Cloud Storage'),
+  http: t('SymbolServer (HTTP)'),
+  s3: t('Amazon S3'),
+};
+
+export function getSourceName(type) {
+  return sourceNames[type] || t('Unknown');
+}
 
 export const fields = {
   builtinSymbolSources: {
@@ -18,30 +31,53 @@ export const fields = {
   },
   symbolSources: {
     name: 'symbolSources',
-    type: 'string',
+    type: 'rich_list',
     label: t('Custom Repositories'),
-    placeholder: t('Paste JSON here.'),
-    multiline: true,
-    monospace: true,
-    autosize: true,
-    inline: false,
-    maxRows: 10,
-    saveOnBlur: false,
-    saveMessageAlertType: 'info',
-    saveMessage: t('Updates will apply to future events only.'),
-    formatMessageValue: false,
     help: t(
       'Configures custom repositories containing debug files. At the moment, only Amazon S3 buckets are supported.'
     ),
-    validate: ({id, form}) => {
-      try {
-        if (form[id].trim()) {
-          JSON.parse(form[id]);
-        }
-      } catch (e) {
-        return [[id, e.toString().replace(/^SyntaxError: JSON.parse: /, '')]];
+    addButtonText: t('Add Repository'),
+    addDropdown: {
+      items: [
+        {
+          value: 's3',
+          label: sourceNames.s3,
+          searchKey: t('aws amazon s3 bucket'),
+        },
+        {
+          value: 'gcs',
+          label: sourceNames.gcs,
+          searchKey: t('gcs google cloud storage bucket'),
+        },
+        {
+          value: 'http',
+          label: sourceNames.http,
+          searchKey: t('http symbol server ssqp symstore symsrv'),
+        },
+      ],
+    },
+
+    renderItem(item) {
+      if (item.name) {
+        return item.name;
+      } else {
+        return <em>{t('<Unnamed Repository>')}</em>;
       }
-      return [];
+    },
+
+    onAddItem(item, addItem) {
+      openDebugFileSourceModal({
+        sourceType: item.value,
+        onSave: addItem,
+      });
+    },
+
+    onEditItem(item, updateItem) {
+      openDebugFileSourceModal({
+        sourceConfig: item,
+        sourceType: item.type,
+        onSave: updateItem,
+      });
     },
   },
 };

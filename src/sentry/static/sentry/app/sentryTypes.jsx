@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-import {SEARCH_TYPES} from 'app/constants';
+import {DEBUG_SOURCE_FILE_TYPES, SEARCH_TYPES} from 'app/constants';
 
 export const Metadata = PropTypes.shape({
   value: PropTypes.string,
@@ -481,6 +481,56 @@ export const GlobalSelection = PropTypes.shape({
     utc: PropTypes.bool,
   }),
 });
+
+export const DebugSourceType = PropTypes.oneOf(['http', 's3', 'gcs']);
+
+// Avoiding code duplication here. This is validated strictly by the server and
+// form elements in the `DebugFilesSourceModal`.
+export const DebugSourceConfig = PropTypes.object;
+
+// export const DebugSourceFileType = PropTypes.oneOf(Object.keys(DEBUG_SOURCE_FILE_TYPES));
+
+// const DebugSourceCommon = {
+//   id: PropTypes.string.isRequired,
+//   name: PropTypes.string.isRequired,
+//   filters: PropTypes.shape({
+//     filetypes: PropTypes.arrayOf(DebugSourceFileType),
+//     path_patterns: PropTypes.arrayOf(PropTypes.string),
+//   }),
+//   layout: PropTypes.shape({
+//     type: PropTypes.oneOf(['native', 'symstore', 'symstore_index2', 'ssqp']),
+//     casing: PropTypes.oneOf(['default', 'uppercase', 'lowercase']),
+//   }),
+// };
+
+// export const DebugSourceConfigHttp = PropTypes.shape({
+//   ...DebugSourceCommon,
+//   url: PropTypes.string.isRequired,
+//   headers: PropTypes.object,
+// });
+
+// export const DebugSourceConfigS3 = PropTypes.shape({
+//   ...DebugSourceCommon,
+//   bucket: PropTypes.string.isRequired,
+//   region: PropTypes.string.isRequired,
+//   access_key: PropTypes.string.isRequired,
+//   secret_key: PropTypes.string.isRequired,
+//   prefix: PropTypes.string,
+// });
+
+// export const DebugSourceConfigGcs = PropTypes.shape({
+//   ...DebugSourceCommon,
+//   bucket: PropTypes.string.isRequired,
+//   client_email: PropTypes.string.isRequired,
+//   private_key: PropTypes.string.isRequired,
+//   prefix: PropTypes.string,
+// });
+
+// export const DebugSourceConfig = PropTypes.oneOfType([
+//   DebugSourceConfigHttp,
+//   DebugSourceConfigS3,
+//   DebugSourceConfigGcs,
+// ]);
 
 export const Widget = PropTypes.shape({
   queries: PropTypes.shape({
@@ -992,6 +1042,8 @@ const SentryTypes = {
   Activity,
   AuthProvider,
   Config,
+  DebugSourceConfig,
+  DebugSourceType,
   Deploy,
   DiscoverQuery,
   DiscoverSavedQuery,

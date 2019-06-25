@@ -68,6 +68,9 @@ COMMON_SOURCE_PROPERTIES = {
         'type': 'string',
         'minLength': 1,
     },
+    'name': {
+        'type': 'string',
+    },
     'layout': LAYOUT_SCHEMA,
     'filetypes': {
         'type': 'array',
