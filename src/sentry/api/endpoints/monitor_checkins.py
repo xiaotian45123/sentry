@@ -60,7 +60,7 @@ class MonitorCheckInsEndpoint(MonitorEndpoint):
             return self.respond(status=404)
 
         serializer = CheckInSerializer(
-            data=request.DATA,
+            data=request.data,
             context={
                 'project': project,
                 'request': request,

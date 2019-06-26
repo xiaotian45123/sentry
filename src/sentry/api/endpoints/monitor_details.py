@@ -35,7 +35,7 @@ class MonitorDetailsEndpoint(MonitorEndpoint):
         """
         validator = MonitorValidator(
             type=monitor.type,
-            data=request.DATA,
+            data=request.data,
             partial=True,
             instance={
                 'name': monitor.name,
