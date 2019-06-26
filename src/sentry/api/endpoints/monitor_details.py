@@ -34,6 +34,7 @@ class MonitorDetailsEndpoint(MonitorEndpoint):
         :auth: required
         """
         validator = MonitorValidator(
+            type=monitor.type,
             data=request.DATA,
             partial=True,
             instance={
@@ -51,7 +52,7 @@ class MonitorDetailsEndpoint(MonitorEndpoint):
         if not validator.is_valid():
             return self.respond(validator.errors, status=400)
 
-        result = validator.data
+        result = validator.validated_data
 
         params = {}
         if 'name' in result:

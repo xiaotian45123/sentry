@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from rest_framework import serializers, status
+from rest_framework.fields import SkipField
 from rest_framework.response import Response
 
 import logging
@@ -82,11 +83,24 @@ serializer_map = {
 def get_serializer_field_metadata(serializer, fields=None):
     """Returns field metadata for serializer"""
     meta = []
-    for field in serializer.base_fields:
-        if (fields is None or field in fields) and field not in hidden_fields:
-            serialized_field = dict(serializer.base_fields[field].metadata())
-            serialized_field['name'] = field
-            serialized_field['defaultValue'] = serializer.base_fields[field].get_default_value()
+    for field_name, field in serializer.fields.items():
+        if (fields is None or field_name in fields) and field_name not in hidden_fields:
+            try:
+                default = field.get_default()
+            except SkipField:
+                default = None
+            serialized_field = {
+                'name': field_name,
+                'defaultValue': default,
+                'read_only': field.read_only,
+                'required': field.required,
+                'type': 'string',
+            }
+            if hasattr(field, 'max_length') and field.max_length:
+                serialized_field['max_length'] = field.max_length
+            if field.label:
+                serialized_field['label'] = field.label
+
             meta.append(serialized_field)
 
     return meta
@@ -117,7 +131,7 @@ class UserAuthenticatorEnrollEndpoint(UserEndpoint):
         # - display configuration form
         response = serialize(interface)
         response['form'] = get_serializer_field_metadata(
-            serializer_map[interface_id]
+            serializer_map[interface_id]()
         )
 
         # U2fInterface has no 'secret' attribute

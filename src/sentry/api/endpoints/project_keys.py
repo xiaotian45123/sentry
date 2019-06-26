@@ -90,7 +90,7 @@ class ProjectKeysEndpoint(ProjectEndpoint):
         serializer = KeySerializer(data=request.DATA)
 
         if serializer.is_valid():
-            result = serializer.object
+            result = serializer.validated_data
 
             key = ProjectKey.objects.create(
                 project=project,
