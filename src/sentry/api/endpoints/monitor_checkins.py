@@ -69,7 +69,7 @@ class MonitorCheckInsEndpoint(MonitorEndpoint):
         if not serializer.is_valid():
             return self.respond(serializer.errors, status=400)
 
-        result = serializer.object
+        result = serializer.validated_data
 
         with transaction.atomic():
             checkin = MonitorCheckIn.objects.create(

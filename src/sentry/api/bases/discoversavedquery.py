@@ -10,12 +10,11 @@ class DiscoverSavedQuerySerializer(serializers.Serializer):
     projects = ListField(
         child=serializers.IntegerField(),
         required=False,
-        allow_null=True,
         default=[]
     )
     start = serializers.DateTimeField(required=False)
     end = serializers.DateTimeField(required=False)
-    range = serializers.CharField(required=False, allow_none=True)
+    range = serializers.CharField(required=False, allow_null=True)
     fields = ListField(
         child=serializers.CharField(),
         required=False,
@@ -32,7 +31,6 @@ class DiscoverSavedQuerySerializer(serializers.Serializer):
     aggregations = ListField(
         child=ListField(),
         required=False,
-        allow_null=True,
         default=[]
     )
     groupby = ListField(
@@ -41,9 +39,8 @@ class DiscoverSavedQuerySerializer(serializers.Serializer):
         allow_null=True,
     )
 
-    def validate_projects(self, attrs, source):
+    def validate_projects(self, projects):
         organization = self.context['organization']
-        projects = attrs[source]
 
         org_projects = set(Project.objects.filter(
             organization=organization,
@@ -54,7 +51,7 @@ class DiscoverSavedQuerySerializer(serializers.Serializer):
         if set(projects) != org_projects:
             raise PermissionDenied
 
-        return attrs
+        return projects
 
     def validate(self, data):
         query = {}

@@ -41,7 +41,7 @@ class UpdateProjectKeyTest(APITestCase):
             }
         )
         response = self.client.put(url, {'rateLimit': None})
-        assert response.status_code == 200
+        assert response.status_code == 200, response.content
         key = ProjectKey.objects.get(id=key.id)
         assert key.rate_limit_count is None
         assert key.rate_limit_window is None

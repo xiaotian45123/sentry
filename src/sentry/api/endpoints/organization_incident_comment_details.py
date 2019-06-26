@@ -77,7 +77,7 @@ class OrganizationIncidentCommentDetailsEndpoint(CommentDetailsEndpoint):
 
         serializer = CommentSerializer(data=request.DATA)
         if serializer.is_valid():
-            result = serializer.object
+            result = serializer.validated_data
 
             try:
                 comment = update_comment(

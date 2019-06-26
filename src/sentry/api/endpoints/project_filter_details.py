@@ -30,7 +30,7 @@ class ProjectFilterDetailsEndpoint(ProjectEndpoint):
             return Response(serializer.errors, status=400)
 
         current_state = filter.is_enabled()
-        new_state = filter.enable(serializer.object)
+        new_state = filter.enable(serializer.validated_data)
         audit_log_state = AuditLogEntryEvent.PROJECT_ENABLE
 
         if filter.id == 'legacy-browsers':

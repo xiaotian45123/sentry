@@ -46,7 +46,7 @@ class RateLimitSerializer(serializers.Serializer):
 class KeySerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200, required=False)
     isActive = serializers.BooleanField(required=False)
-    rateLimit = RateLimitSerializer(required=False)
+    rateLimit = RateLimitSerializer(required=False, allow_null=True)
     browserSdkVersion = serializers.ChoiceField(
         choices=get_browser_sdk_version_choices(), required=False
     )
@@ -95,7 +95,7 @@ class ProjectKeyDetailsEndpoint(ProjectEndpoint):
         default_version = get_default_sdk_version_for_project(project)
 
         if serializer.is_valid():
-            result = serializer.object
+            result = serializer.validated_data
 
             if result.get('name'):
                 key.label = result['name']
