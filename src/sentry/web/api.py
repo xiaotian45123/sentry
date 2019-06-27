@@ -622,10 +622,10 @@ class EventAttachmentStoreView(StoreView):
 
         project_id = relay_config.project_id
 
-        if len(request.FILES) == 0:
+        if len(request.data) == 0:
             return HttpResponse(status=400)
 
-        for name, uploaded_file in six.iteritems(request.FILES):
+        for name, uploaded_file in six.iteritems(request.data):
             file = File.objects.create(
                 name=uploaded_file.name,
                 type='event.attachment',
@@ -721,7 +721,7 @@ class MinidumpView(StoreView):
         # request. Optionally, an event payload can be sent in the `sentry` form
         # field, either as JSON or as nested form data.
 
-        request_files = request.FILES or {}
+        request_files = request.data or {}
         content_type = request.META.get('CONTENT_TYPE')
 
         if content_type in self.dump_types:
