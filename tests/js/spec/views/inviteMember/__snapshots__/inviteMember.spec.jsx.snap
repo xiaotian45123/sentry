@@ -658,14 +658,14 @@ exports[`InviteMember should render roles when available and allowed, and handle
                                                                       className="css-17v3tc-StyledChevronDown e1yghndz0"
                                                                       src="icon-chevron-down"
                                                                     >
-                                                                      <Styled(svg)
+                                                                      <StyledSvg
                                                                         className="css-17v3tc-StyledChevronDown e1yghndz0"
                                                                         height="1em"
                                                                         viewBox={Object {}}
                                                                         width="1em"
                                                                       >
                                                                         <svg
-                                                                          className="e1yghndz0 css-iudixj-StyledChevronDown"
+                                                                          className="e1yghndz0 css-1gdv3x4-StyledSvg-StyledChevronDown enyz4ql0"
                                                                           height="1em"
                                                                           viewBox={Object {}}
                                                                           width="1em"
@@ -675,7 +675,7 @@ exports[`InviteMember should render roles when available and allowed, and handle
                                                                             xlinkHref="#test"
                                                                           />
                                                                         </svg>
-                                                                      </Styled(svg)>
+                                                                      </StyledSvg>
                                                                     </InlineSvg>
                                                                   </Component>
                                                                 </StyledChevronDown>

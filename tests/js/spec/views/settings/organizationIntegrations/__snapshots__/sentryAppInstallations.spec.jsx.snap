@@ -871,14 +871,14 @@ exports[`Sentry App Installations when Apps exist displays all Apps owned by the
                                               size="12px"
                                               src="icon-circle-add"
                                             >
-                                              <Styled(svg)
+                                              <StyledSvg
                                                 className="css-1ov3rcq-StyledInlineSvg e12ma6z3"
                                                 height="12px"
                                                 viewBox={Object {}}
                                                 width="12px"
                                               >
                                                 <svg
-                                                  className="e12ma6z3 css-1m5a3fp-StyledInlineSvg"
+                                                  className="e12ma6z3 css-1jjmnki-StyledSvg-StyledInlineSvg enyz4ql0"
                                                   height="12px"
                                                   viewBox={Object {}}
                                                   width="12px"
@@ -888,7 +888,7 @@ exports[`Sentry App Installations when Apps exist displays all Apps owned by the
                                                     xlinkHref="#test"
                                                   />
                                                 </svg>
-                                              </Styled(svg)>
+                                              </StyledSvg>
                                             </InlineSvg>
                                           </StyledInlineSvg>
                                         </span>

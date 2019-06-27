@@ -505,14 +505,14 @@ exports[`Project Ownership Input renders 1`] = `
             className="css-a4tn6s-Divider e1hyuoc78"
             src="icon-chevron-right"
           >
-            <Styled(svg)
+            <StyledSvg
               className="css-a4tn6s-Divider e1hyuoc78"
               height="1em"
               viewBox={Object {}}
               width="1em"
             >
               <svg
-                className="e1hyuoc78 css-y8v7kq-Divider"
+                className="e1hyuoc78 css-1uv43pt-StyledSvg-Divider enyz4ql0"
                 height="1em"
                 viewBox={Object {}}
                 width="1em"
@@ -522,7 +522,7 @@ exports[`Project Ownership Input renders 1`] = `
                   xlinkHref="#test"
                 />
               </svg>
-            </Styled(svg)>
+            </StyledSvg>
           </InlineSvg>
         </Divider>
         <Flex
@@ -944,14 +944,14 @@ exports[`Project Ownership Input renders 1`] = `
                                   size="12px"
                                   src="icon-circle-add"
                                 >
-                                  <Styled(svg)
+                                  <StyledSvg
                                     className="css-1ov3rcq-StyledInlineSvg e12ma6z3"
                                     height="12px"
                                     viewBox={Object {}}
                                     width="12px"
                                   >
                                     <svg
-                                      className="e12ma6z3 css-1m5a3fp-StyledInlineSvg"
+                                      className="e12ma6z3 css-1jjmnki-StyledSvg-StyledInlineSvg enyz4ql0"
                                       height="12px"
                                       viewBox={Object {}}
                                       width="12px"
@@ -961,7 +961,7 @@ exports[`Project Ownership Input renders 1`] = `
                                         xlinkHref="#test"
                                       />
                                     </svg>
-                                  </Styled(svg)>
+                                  </StyledSvg>
                                 </InlineSvg>
                               </StyledInlineSvg>
                             </span>
